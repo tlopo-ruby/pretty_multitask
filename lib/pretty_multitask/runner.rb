@@ -1,5 +1,6 @@
 module PrettyMultitask
 
+  LOGGER ||= Logger.new STDOUT
   class Runner
     def initialize(jobs)
       @jobs = jobs
