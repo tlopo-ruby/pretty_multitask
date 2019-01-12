@@ -24,20 +24,19 @@ module PrettyMultitask
       errors = exec.run.errors
   
       @jobs.each do |j|
-        padding = ( longest -  j[:name].length )/2
-        left = '='*35
-        left += '='*padding
+        label = "[ #{j[:name]} ]"
+        width = IO.console.winsize[-1]
+        left = '='*((width - label.length)/2)
         right = j[:name].length.even? ? left : left + '='
         puts "\n"
-        label = "[ #{j[:name]} ]"
-        puts Color.yellow left +  "[ #{j[:name]} ]" + right
+        puts Color.yellow left +  label + right
         puts File.read j[:out_file]
-        puts Color.yellow left + label.gsub(/./,'=') + right
+        puts Color.yellow "="*width
         File.delete j[:out_file]
       end
   
       unless errors.empty?
-        LOGGER.fatal 'Found errors'
+        LOGGER.fatal 'Found errors '
         exit 2
       end
     end
