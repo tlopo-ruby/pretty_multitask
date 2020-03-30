@@ -36,8 +36,8 @@ module PrettyMultitask
       end
   
       unless errors.empty?
-        LOGGER.fatal 'Found errors '
-        exit 2
+        errors.eacho {|e| LOGGER.error e}
+        raise 'Found errors'
       end
     end
   
