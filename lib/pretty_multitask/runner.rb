@@ -36,7 +36,7 @@ module PrettyMultitask
       end
   
       unless errors.empty?
-        errors.eacho {|e| LOGGER.error e}
+        errors.each {|e| LOGGER.error e}
         raise 'Found errors'
       end
     end
