@@ -11,6 +11,7 @@ require 'timeout'
 require 'yaml'
 require 'fileutils'
 
+# Main module
 module PrettyMultitask
   require "#{__dir__}/pretty_multitask/color"
   require "#{__dir__}/pretty_multitask/runner"

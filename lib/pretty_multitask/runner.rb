@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 module PrettyMultitask
-  LOGGER ||= Logger.new STDOUT
+  # This class will run multiple callables in parallel using RunCallable which add a nice format
   class Runner
+    LOGGER ||= Logger.new STDOUT
     def initialize(jobs)
       @jobs = jobs
       @jobs.each do |j|
@@ -15,16 +16,22 @@ module PrettyMultitask
     def run
       exec = Tlopo::Executor.new 10
 
-      longest = 0
-      @jobs.each { |job| longest = job[:name].length if job[:name].length > longest }
-      @jobs.each { |job| job[:padding] = longest }
-
+      @jobs.each { |job| job[:padding] = longest_jobname }
       @jobs.each do |j|
         task = proc { j[:exit_status] = RunCallable.new(j).run }
         exec.schedule task
       end
       errors = exec.run.errors
 
+      print_out
+
+      unless errors.empty?
+        errors.each { |e| LOGGER.error e }
+        raise 'Found errors'
+      end
+    end
+
+    def print_out
       @jobs.each do |j|
         label = "[ #{j[:name]} ]"
         width = IO.console.winsize[-1]
@@ -36,11 +43,12 @@ module PrettyMultitask
         puts Color.yellow '=' * width
         File.delete j[:out_file]
       end
+    end
 
-      unless errors.empty?
-        errors.each { |e| LOGGER.error e }
-        raise 'Found errors'
-      end
+    def longest_jobname
+      longest = 0
+      @jobs.each { |job| longest = job[:name].length if job[:name].length > longest }
+      longest
     end
   end
 end

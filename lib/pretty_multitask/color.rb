@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module PrettyMultitask
+  # Class to provide some ANSI colors
   class Color
     def self.green(str)
       "\e[32;1m#{str}\e[0m"

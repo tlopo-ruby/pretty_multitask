@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module PrettyMultitask
+  # This class will run a callable, and wrap it's output adding nice format
   class RunCallable
     def initialize(opts = {})
       @opts = opts
@@ -17,22 +18,7 @@ module PrettyMultitask
 
       r, w = UNIXSocket.pair(:STREAM, 0)
 
-      pid = fork do
-        STDERR.reopen err_write
-        STDOUT.reopen master
-        begin
-          result = cmd.call
-          obj = { result: result, error: nil }
-        rescue StandardError => e
-          new_error = e.class.new(e.message)
-          new_error.set_backtrace e.backtrace
-          Logger.new(STDERR).error new_error
-          obj = { result: nil, error: new_error }
-          w.puts Marshal.dump(obj), 0
-        end
-        w.puts Marshal.dump(obj), 0
-        w.close
-      end
+      pid = run_on_fork(cmd, err_write, master, w)
 
       t_out = consume_and_print slave, out, name, false
       t_err = consume_and_print err_read, out, name, true
@@ -66,6 +52,26 @@ module PrettyMultitask
       raise result[:error] if result[:error]
 
       result[:result]
+    end
+
+    def run_on_fork(cmd, err_w, out_w, socket_w)
+      pid = fork do
+        STDERR.reopen err_w
+        STDOUT.reopen out_w
+        begin
+          result = cmd.call
+          obj = { result: result, error: nil }
+        rescue StandardError => e
+          new_error = e.class.new(e.message)
+          new_error.set_backtrace e.backtrace
+          Logger.new(STDERR).error new_error
+          obj = { result: nil, error: new_error }
+          socket_w.puts Marshal.dump(obj), 0
+        end
+        socket_w.puts Marshal.dump(obj), 0
+        socket_w.close
+      end
+      pid
     end
 
     def consume_and_print(reader, writer, name, error = false)
