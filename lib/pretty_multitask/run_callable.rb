@@ -37,8 +37,6 @@ module PrettyMultitask
       t_out = consume_and_print slave, out, name, false
       t_err = consume_and_print err_read, out, name, true
   
-      Process.wait pid
-  
       %i[slave err_read].each do |e|
         loop { break unless binding.local_variable_get(e).ready? }
       end
@@ -54,8 +52,13 @@ module PrettyMultitask
       %i[master slave err_read err_write].each { |e| binding.local_variable_get(e).close }
   
       chars = []
-      chars << r.getc while r.ready?
-      r.close
+      t = Thread.new do
+        sleep 0.1 until r.ready?
+        chars << r.getc while r.ready?
+      end
+
+      Process.wait pid
+      Timeout.timeout(1) { t.join }
   
       result = Marshal.load(chars.join)
       raise result[:error] if result[:error]
