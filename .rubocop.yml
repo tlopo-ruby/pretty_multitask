@@ -1,0 +1,21 @@
+Style/SpecialGlobalVars:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Layout/FirstArrayElementIndentation:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 35 
+
+Metrics/LineLength:
+  Max: 120
+  Exclude:
+    - test/**/*
+Layout/ElseAlignment:
+  Enabled: false
+Metrics/BlockLength:
+  Exclude:
+    - '*.gemspec' 

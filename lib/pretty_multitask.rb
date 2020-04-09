@@ -1,4 +1,6 @@
-require "pretty_multitask/version"
+# frozen_string_literal: true
+
+require 'pretty_multitask/version'
 require 'tlopo/executor'
 require 'logger'
 require 'pty'
@@ -16,15 +18,16 @@ module PrettyMultitask
 end
 
 def pretty_multitask(hash)
-  name, tasks = hash.keys.first, hash.values.first
+  name = hash.keys.first
+  tasks = hash.values.first
   task name do
     jobs = []
     tasks.each do |t|
-      job = Proc.new do 
+      job = proc do
         Rake::Task[t].invoke
         nil
       end
-      jobs.push({ name: t, cmd: job})
+      jobs.push({ name: t, cmd: job })
     end
     PrettyMultitask::Runner.new(jobs).run
   end

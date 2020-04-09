@@ -1,10 +1,11 @@
-module PrettyMultitask 
+# frozen_string_literal: true
 
+module PrettyMultitask
   class RunCallable
     def initialize(opts = {})
       @opts = opts
     end
-  
+
     def run(opts = @opts)
       cmd = opts[:cmd]
       name = opts[:name]
@@ -13,9 +14,9 @@ module PrettyMultitask
       @padding = opts[:padding]
       master, slave = PTY.open
       err_read, err_write = IO.pipe
-  
+
       r, w = UNIXSocket.pair(:STREAM, 0)
-  
+
       pid = fork do
         STDERR.reopen err_write
         STDOUT.reopen master
@@ -27,7 +28,6 @@ module PrettyMultitask
           new_error.set_backtrace e.backtrace
           Logger.new(STDERR).error new_error
           obj = { result: nil, error: new_error }
-          File.open('/tmp/error','w+'){|f| f.puts obj.to_yaml}
           w.puts Marshal.dump(obj), 0
         end
         w.puts Marshal.dump(obj), 0
@@ -40,18 +40,18 @@ module PrettyMultitask
       chars = []
       t = Thread.new do
         sleep 0.1 until r.ready?
-        (1..3).each do 
+        3.times do
           chars << r.getc while r.ready?
         end
       end
 
       Process.wait pid
       Timeout.timeout(1) { t.join }
-  
+
       %i[slave err_read].each do |e|
         loop { break unless binding.local_variable_get(e).ready? }
       end
-  
+
       begin
         Timeout.timeout(0.1) do
           %i[t_out t_err].each { |e| binding.local_variable_get(e).join }
@@ -59,13 +59,12 @@ module PrettyMultitask
       rescue Timeout::Error
         nil
       end
-  
+
       %i[master slave err_read err_write].each { |e| binding.local_variable_get(e).close }
-  
-  
+
       result = Marshal.load(chars.join)
       raise result[:error] if result[:error]
-  
+
       result[:result]
     end
 
@@ -77,10 +76,12 @@ module PrettyMultitask
           colored = Color.green format(fmt, name) unless error
           reader.each_line do |line|
             writer.write "#{colored} #{line}"
-            File.open(@opts[:out_file],'a+') do |f|
+            next unless @opts[:out_file]
+
+            File.open(@opts[:out_file], 'a+') do |f|
               f.puts "#{colored} #{line}" if error
               f.puts "#{colored} #{line}" unless error
-            end if @opts[:out_file]
+            end
           end
         rescue Errno::EIO
           nil
