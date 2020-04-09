@@ -10,8 +10,7 @@ module PrettyMultitask
     def run(opts = @opts)
       cmd = opts[:cmd]
       name = opts[:name]
-      out = opts[:out] || STDOUT
-      err = opts[:err] || STDERR
+      out = STDOUT
       @padding = opts[:padding]
       master, slave = PTY.open
       err_read, err_write = IO.pipe
@@ -34,17 +33,22 @@ module PrettyMultitask
       Process.wait pid
       Timeout.timeout(1) { t.join }
 
-      %i[slave err_read].each do |e|
-        loop { break unless binding.local_variable_get(e).ready? }
-      end
+      wait_until_streams_are_ready [slave, err_read]
 
       join_threads [t_out, t_err]
+
       close_streams [master, slave, err_read, err_write]
 
       result = Marshal.load(chars.join)
       raise result[:error] if result[:error]
 
       result[:result]
+    end
+
+    def wait_until_streams_are_ready(streams)
+      streams.each do |s|
+        loop { break unless s.ready? }
+      end
     end
 
     def join_threads(threads)
