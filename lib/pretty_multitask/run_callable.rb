@@ -54,7 +54,9 @@ module PrettyMultitask
       chars = []
       t = Thread.new do
         sleep 0.1 until r.ready?
-        chars << r.getc while r.ready?
+        (1..3).each do 
+          chars << r.getc while r.ready?
+        end
       end
 
       Process.wait pid

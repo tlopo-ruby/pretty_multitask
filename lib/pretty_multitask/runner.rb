@@ -7,6 +7,7 @@ module PrettyMultitask
       @jobs.each do |j|
         [:name, :cmd ].each {|o| raise "#{o} must be specified for job #{j}" unless j[o]  }
         j[:out_file] = "/tmp/#{j[:name]}-#{Time.now.strftime('%s.%N')}"
+        FileUtils.touch j[:out_file]
       end
     end
   

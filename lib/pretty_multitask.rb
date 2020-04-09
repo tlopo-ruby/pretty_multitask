@@ -7,6 +7,7 @@ require 'io/wait'
 require 'socket'
 require 'timeout'
 require 'yaml'
+require 'fileutils'
 
 module PrettyMultitask
   require "#{__dir__}/pretty_multitask/color"
