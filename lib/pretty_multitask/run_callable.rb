@@ -23,19 +23,13 @@ module PrettyMultitask
       t_err = consume_and_print err_read, out, name, true
 
       chars = []
-      t = Thread.new do
-        sleep 0.1 until r.ready?
-        3.times do
-          chars << r.getc while r.ready?
-        end
-      end
+      t = consume_and_store r, chars
 
       Process.wait pid
-      Timeout.timeout(1) { t.join }
 
       wait_until_streams_are_ready [slave, err_read]
 
-      join_threads [t_out, t_err]
+      join_threads [t_out, t_err, t]
 
       close_streams [master, slave, err_read, err_write]
 
@@ -43,6 +37,16 @@ module PrettyMultitask
       raise result[:error] if result[:error]
 
       result[:result]
+    end
+
+    def consume_and_store(reader, store)
+      t = Thread.new do
+        sleep 0.1 until reader.ready?
+        3.times do
+          store << reader.getc while reader.ready?
+        end
+      end
+      t
     end
 
     def wait_until_streams_are_ready(streams)
