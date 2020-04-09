@@ -38,20 +38,27 @@ module PrettyMultitask
         loop { break unless binding.local_variable_get(e).ready? }
       end
 
-      begin
-        Timeout.timeout(0.1) do
-          %i[t_out t_err].each { |e| binding.local_variable_get(e).join }
-        end
-      rescue Timeout::Error
-        nil
-      end
-
-      %i[master slave err_read err_write].each { |e| binding.local_variable_get(e).close }
+      join_threads [t_out, t_err]
+      close_streams [master, slave, err_read, err_write]
 
       result = Marshal.load(chars.join)
       raise result[:error] if result[:error]
 
       result[:result]
+    end
+
+    def join_threads(threads)
+      threads.each do |t|
+        begin
+          Timeout.timeout(0.1) { t.join }
+        rescue Timeout::Error
+          nil
+        end
+      end
+    end
+
+    def close_streams(streams)
+      streams.each(&:close)
     end
 
     def run_on_fork(cmd, err_w, out_w, socket_w)

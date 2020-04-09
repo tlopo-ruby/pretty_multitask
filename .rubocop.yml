@@ -4,19 +4,30 @@ Style/SpecialGlobalVars:
 Style/ConditionalAssignment:
   Enabled: false
 
+Style/GuardClause:
+  Enabled: false
+
 Layout/FirstArrayElementIndentation:
   Enabled: false
 
 Metrics/MethodLength:
   Max: 35 
 
-Metrics/AbcSize:
-  Max: 30
-
 Metrics/LineLength:
   Max: 120
   Exclude:
     - test/**/*
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/AbcSize:
+  Max: 30
+
+Security/MarshalLoad:
+  Exclude:
+    - lib/pretty_multitask/run_callable.rb
+ 
 Layout/ElseAlignment:
   Enabled: false
 Metrics/BlockLength:
