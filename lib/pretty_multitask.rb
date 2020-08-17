@@ -10,6 +10,7 @@ require 'socket'
 require 'timeout'
 require 'yaml'
 require 'fileutils'
+require 'set'
 
 # Main module
 module PrettyMultitask
