@@ -13,6 +13,7 @@ require 'fileutils'
 
 # Main module
 module PrettyMultitask
+  require "#{__dir__}/pretty_multitask/trapper"
   require "#{__dir__}/pretty_multitask/color"
   require "#{__dir__}/pretty_multitask/runner"
   require "#{__dir__}/pretty_multitask/run_callable"
