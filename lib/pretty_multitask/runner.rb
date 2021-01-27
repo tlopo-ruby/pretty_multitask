@@ -35,6 +35,7 @@ module PrettyMultitask
       @jobs.each do |j|
         label = "[ #{j[:name]} ]"
         width = IO.console.winsize[-1]
+        width = 80 unless width > 0
         left = '=' * ((width - label.length) / 2)
         right = j[:name].length.even? ? left : left + '='
         puts "\n"
