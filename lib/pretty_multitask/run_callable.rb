@@ -17,10 +17,10 @@ module PrettyMultitask
 
       r, w = UNIXSocket.pair(:STREAM, 0)
 
-      pid = run_on_fork(cmd, err_write, master, w)
+      pid = run_on_fork(cmd, err_write, slave, w)
       Trapper.trap pid
 
-      t_out = consume_and_print slave, out, name, false
+      t_out = consume_and_print master, out, name, false
       t_err = consume_and_print err_read, out, name, true
 
       chars = []
