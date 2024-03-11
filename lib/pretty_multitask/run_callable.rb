@@ -3,6 +3,8 @@
 module PrettyMultitask
   # This class will run a callable, and wrap it's output adding nice format
   class RunCallable
+    LOGGER ||= Logger.new $stderr
+
     def initialize(opts = {})
       @opts = opts
     end
@@ -80,7 +82,8 @@ module PrettyMultitask
         rescue StandardError => e
           new_error = e.class.new(e.message)
           new_error.set_backtrace e.backtrace
-          Logger.new(STDERR).error new_error
+          LOGGER.reopen STDERR
+          LOGGER.error new_error
           obj = { result: nil, error: new_error }
           socket_w.puts Marshal.dump(obj), 0
         end
